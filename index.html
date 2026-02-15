@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Leap - Life Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 2px solid #e94560;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 1.1rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #2d2d44;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(233, 69, 96, 0.15);
+        }
+        
+        .card h3 {
+            color: #e94560;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #2d2d44;
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .metric-value.good {
+            color: #4ade80;
+        }
+        
+        .metric-value.bad {
+            color: #ef4444;
+        }
+        
+        .metric-value.warning {
+            color: #fbbf24;
+        }
+        
+        .streak {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .streak-count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #e94560;
+        }
+        
+        .streak-label {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        
+        .chart-container {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #2d2d44;
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-container h3 {
+            color: #e94560;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .deadline-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #0f0f0f;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid #e94560;
+        }
+        
+        .deadline-item.urgent {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .deadline-item.upcoming {
+            border-left-color: #fbbf24;
+        }
+        
+        .deadline-item.completed {
+            border-left-color: #4ade80;
+            opacity: 0.6;
+        }
+        
+        .deadline-course {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .deadline-name {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        
+        .deadline-days {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .portfolio-value {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        
+        .portfolio-change {
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        .portfolio-change.up {
+            color: #4ade80;
+        }
+        
+        .portfolio-change.down {
+            color: #ef4444;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .date-display {
+            text-align: center;
+            color: #888;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .quick-stat {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #2d2d44;
+        }
+        
+        .quick-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #e94560;
+        }
+        
+        .quick-stat-label {
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .quick-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🦁 THE LEAP</h1>
+        <p>Life Dashboard - Consistency Regardless of Outcome</p>
+    </div>
+    
+    <div class="container">
+        <div class="date-display" id="current-date"></div>
+        
+        <div class="quick-stats">
+            <div class="quick-stat">
+                <div class="quick-stat-value" id="wake-streak">-</div>
+                <div class="quick-stat-label">Wake Streak</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-value" id="gym-streak">-</div>
+                <div class="quick-stat-label">Gym Streak</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-value" id="portfolio-value">-</div>
+                <div class="quick-stat-label">Portfolio</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-value" id="days-to-exam">-</div>
+                <div class="quick-stat-label">Days to Exam</div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>📅 Today's Tracking</h3>
+                <div id="today-tracking">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>🔥 Streaks</h3>
+                <div id="streaks">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>💰 Portfolio</h3>
+                <div id="portfolio">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3>📈 Portfolio Value (Last 30 Days)</h3>
+            <canvas id="portfolio-chart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <h3>⏰ Wake-up Times (Last 30 Days)</h3>
+            <canvas id="wake-chart"></canvas>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>📚 Upcoming Deadlines</h3>
+                <div id="deadlines">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>💪 Gym Progress</h3>
+                <div id="gym-progress">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://sdgmpjfyzgecfgjpkeua.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZ21wamZ5emdlY2ZnanBrZXVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwODA0MTksImV4cCI6MjA4NjY1NjQxOX0.pWas9s9MDoZtIMki-q6b7v3avKgVsq8B61cx7Cf-ooQ';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Set current date
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Initialize charts
+        let portfolioChart, wakeChart;
+        
+        async function loadDashboard() {
+            try {
+                // Load daily logs
+                const { data: dailyLogs, error: logsError } = await supabase
+                    .from('daily_logs')
+                    .select('*')
+                    .order('date', { ascending: false })
+                    .limit(30);
+                
+                if (logsError) throw logsError;
+                
+                // Load portfolio snapshots
+                const { data: portfolioData, error: portfolioError } = await supabase
+                    .from('portfolio_snapshots')
+                    .select('*')
+                    .order('date', { ascending: false })
+                    .limit(30);
+                
+                if (portfolioError) throw portfolioError;
+                
+                // Load streaks
+                const { data: streaks, error: streaksError } = await supabase
+                    .from('consistency_streaks')
+                    .select('*');
+                
+                if (streaksError) throw streaksError;
+                
+                // Load deadlines
+                const { data: deadlines, error: deadlinesError } = await supabase
+                    .from('school_deadlines')
+                    .select('*')
+                    .order('due_date', { ascending: true })
+                    .limit(10);
+                
+                if (deadlinesError) throw deadlinesError;
+                
+                // Update UI
+                updateTodayTracking(dailyLogs[0]);
+                updateStreaks(streaks);
+                updatePortfolio(portfolioData);
+                updateDeadlines(deadlines);
+                updateGymProgress(dailyLogs);
+                
+                // Render charts
+                renderPortfolioChart(portfolioData);
+                renderWakeChart(dailyLogs);
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showError('Failed to load data. Check console for details.');
+            }
+        }
+        
+        function updateTodayTracking(today) {
+            const container = document.getElementById('today-tracking');
+            if (!today) {
+                container.innerHTML = '<div class="metric"><span class="metric-label">No data for today</span></div>';
+                return;
+            }
+            
+            const wakeStatus = today.wake_on_time ? 'good' : 'bad';
+            const wakeText = today.wake_on_time ? '✓ On Time' : '✗ Late';
+            const gymStatus = today.gym_done ? 'good' : 'bad';
+            const gymText = today.gym_done ? '✓ Done' : '✗ Missed';
+            
+            container.innerHTML = `
+                <div class="metric">
+                    <span class="metric-label">Wake Up</span>
+                    <span class="metric-value ${wakeStatus}">${today.wake_time || '--:--'} ${wakeText}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Trading P&L</span>
+                    <span class="metric-value ${(today.trading_pnl || 0) >= 0 ? 'good' : 'bad'}">${today.trading_pnl !== null ? '$' + today.trading_pnl : '--'}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Calories</span>
+                    <span class="metric-value ${(today.calories || 0) >= 3000 ? 'good' : 'warning'}">${today.calories || '--'} / 3000</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Protein</span>
+                    <span class="metric-value ${(today.protein || 0) >= 150 ? 'good' : 'warning'}">${today.protein || '--'} / 150g</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Gym</span>
+                    <span class="metric-value ${gymStatus}">${gymText}${today.gym_workout ? ' - ' + today.gym_workout : ''}</span>
+                </div>
+            `;
+        }
+        
+        function updateStreaks(streaks) {
+            const container = document.getElementById('streaks');
+            if (!streaks || streaks.length === 0) {
+                container.innerHTML = '<div class="metric"><span class="metric-label">No streak data</span></div>';
+                return;
+            }
+            
+            const streakData = {};
+            streaks.forEach(s => {
+                streakData[s.streak_type] = s;
+            });
+            
+            // Update quick stats
+            if (streakData['wake_up']) {
+                document.getElementById('wake-streak').textContent = streakData['wake_up'].current_streak;
+            }
+            if (streakData['gym']) {
+                document.getElementById('gym-streak').textContent = streakData['gym'].current_streak;
+            }
+            
+            container.innerHTML = streaks.map(s => `
+                <div class="metric">
+                    <span class="metric-label">${s.streak_type.replace('_', ' ').toUpperCase()}</span>
+                    <div class="streak">
+                        <span class="streak-count">${s.current_streak}</span>
+                        <span class="streak-label">days<br>best: ${s.longest_streak}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updatePortfolio(data) {
+            const container = document.getElementById('portfolio');
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="loading">No portfolio data</div>';
+                return;
+            }
+            
+            const latest = data[0];
+            const previous = data[1] || latest;
+            const change = latest.total_value_cad - previous.total_value_cad;
+            const changePct = (change / previous.total_value_cad) * 100;
+            
+            document.getElementById('portfolio-value').textContent = '$' + (latest.total_value_cad / 1000).toFixed(1) + 'k';
+            
+            container.innerHTML = `
+                <div class="portfolio-value">$${latest.total_value_cad?.toLocaleString() || '--'}</div>
+                <div class="portfolio-change ${change >= 0 ? 'up' : 'down'}">
+                    ${change >= 0 ? '▲' : '▼'} $${Math.abs(change).toFixed(2)} (${changePct.toFixed(2)}%)
+                </div>
+                <div class="metric" style="margin-top: 1rem;">
+                    <span class="metric-label">Biggest Mover</span>
+                    <span class="metric-value">${latest.biggest_mover_symbol || '--'} ${latest.biggest_mover_pct ? '(' + latest.biggest_mover_pct.toFixed(2) + '%)' : ''}</span>
+                </div>
+            `;
+        }
+        
+        function updateDeadlines(deadlines) {
+            const container = document.getElementById('deadlines');
+            if (!deadlines || deadlines.length === 0) {
+                container.innerHTML = '<div class="metric"><span class="metric-label">No upcoming deadlines</span></div>';
+                return;
+            }
+            
+            const today = new Date();
+            
+            container.innerHTML = deadlines.map(d => {
+                const dueDate = new Date(d.due_date);
+                const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                let statusClass = '';
+                let daysText = '';
+                
+                if (d.completed) {
+                    statusClass = 'completed';
+                    daysText = '✓ Done';
+                } else if (daysLeft < 0) {
+                    statusClass = 'urgent';
+                    daysText = `${Math.abs(daysLeft)} days overdue`;
+                } else if (daysLeft <= 3) {
+                    statusClass = 'urgent';
+                    daysText = `${daysLeft} days left`;
+                } else if (daysLeft <= 7) {
+                    statusClass = 'upcoming';
+                    daysText = `${daysLeft} days left`;
+                } else {
+                    daysText = `${daysLeft} days left`;
+                }
+                
+                // Calculate days to exam for quick stat
+                if (d.assignment_name.toLowerCase().includes('midterm') || 
+                    d.assignment_name.toLowerCase().includes('exam')) {
+                    document.getElementById('days-to-exam').textContent = daysLeft > 0 ? daysLeft : 0;
+                }
+                
+                return `
+                    <div class="deadline-item ${statusClass}">
+                        <div>
+                            <div class="deadline-course">${d.course_code}</div>
+                            <div class="deadline-name">${d.assignment_name}</div>
+                        </div>
+                        <div class="deadline-days">${daysText}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateGymProgress(logs) {
+            const container = document.getElementById('gym-progress');
+            if (!logs || logs.length === 0) {
+                container.innerHTML = '<div class="loading">No gym data</div>';
+                return;
+            }
+            
+            const gymDays = logs.filter(l => l.gym_done).length;
+            const totalDays = logs.length;
+            const percentage = (gymDays / totalDays * 100).toFixed(1);
+            
+            // Get recent workouts
+            const recentWorkouts = logs
+                .filter(l => l.gym_workout)
+                .slice(0, 5)
+                .map(l => l.gym_workout);
+            
+            container.innerHTML = `
+                <div class="metric">
+                    <span class="metric-label">This Month</span>
+                    <span class="metric-value good">${gymDays}/${totalDays} days (${percentage}%)</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Recent Workouts</span>
+                </div>
+                ${recentWorkouts.map(w => `
+                    <div class="metric" style="padding-left: 1rem;">
+                        <span class="metric-label" style="font-size: 0.8rem;">• ${w}</span>
+                    </div>
+                `).join('') || '<div class="metric"><span class="metric-label">No recent workouts</span></div>'}
+            `;
+        }
+        
+        function renderPortfolioChart(data) {
+            const ctx = document.getElementById('portfolio-chart').getContext('2d');
+            
+            if (portfolioChart) {
+                portfolioChart.destroy();
+            }
+            
+            const dates = data.map(d => new Date(d.date).toLocaleDateString()).reverse();
+            const values = data.map(d => d.total_value_cad).reverse();
+            
+            portfolioChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Portfolio Value (CAD)',
+                        data: values,
+                        borderColor: '#4ade80',
+                        backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#888' },
+                            grid: { color: '#2d2d44' }
+                        },
+                        y: {
+                            ticks: { color: '#888' },
+                            grid: { color: '#2d2d44' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderWakeChart(logs) {
+            const ctx = document.getElementById('wake-chart').getContext('2d');
+            
+            if (wakeChart) {
+                wakeChart.destroy();
+            }
+            
+            // Convert wake times to minutes from midnight
+            const timeToMinutes = (timeStr) => {
+                if (!timeStr) return null;
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                return hours * 60 + minutes;
+            };
+            
+            const dates = logs.map(l => new Date(l.date).toLocaleDateString()).reverse();
+            const wakeMinutes = logs.map(l => timeToMinutes(l.wake_time)).reverse();
+            
+            // 8 AM = 480 minutes (target line)
+            const targetLine = new Array(dates.length).fill(480);
+            
+            wakeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Wake Time (minutes from midnight)',
+                        data: wakeMinutes,
+                        borderColor: '#e94560',
+                        backgroundColor: 'rgba(233, 69, 96, 0.1)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 4
+                    }, {
+                        label: 'Target (8 AM)',
+                        data: targetLine,
+                        borderColor: '#4ade80',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#888' },
+                            grid: { color: '#2d2d44' }
+                        },
+                        y: {
+                            ticks: { 
+                                color: '#888',
+                                callback: function(value) {
+                                    const hours = Math.floor(value / 60);
+                                    const mins = value % 60;
+                                    return `${hours}:${mins.toString().padStart(2, '0')}`;
+                                }
+                            },
+                            grid: { color: '#2d2d44' },
+                            min: 360,  // 6 AM
+                            max: 720   // 12 PM
+                        }
+                    }
+                }
+            });
+        }
+        
+        function showError(message) {
+            const container = document.querySelector('.container');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            container.insertBefore(errorDiv, container.firstChild);
+        }
+        
+        // Load dashboard on page load
+        loadDashboard();
+        
+        // Refresh every 5 minutes
+        setInterval(loadDashboard, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
