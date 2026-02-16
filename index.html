@@ -15,71 +15,68 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f0f0f;
-            color: #fff;
+            background: #fff;
+            color: #000;
             min-height: 100vh;
+            font-size: 14px;
         }
         
         .header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             padding: 2rem;
             text-align: center;
-            border-bottom: 2px solid #e94560;
+            border-bottom: 1px solid #000;
         }
         
         .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #e94560, #ff6b6b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
         }
         
         .header p {
-            color: #888;
-            font-size: 1.1rem;
+            color: #666;
+            font-size: 0.9rem;
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
         }
         
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1px;
             margin-bottom: 2rem;
         }
         
         .card {
-            background: #1a1a2e;
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid #2d2d44;
-            transition: transform 0.2s, box-shadow 0.2s;
+            background: #fff;
+            padding: 1.25rem;
+            border: 1px solid #000;
         }
         
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(233, 69, 96, 0.15);
+            background: #f5f5f5;
         }
         
         .card h3 {
-            color: #e94560;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
+            color: #000;
+            margin-bottom: 0.75rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.1em;
+            font-weight: 500;
         }
         
         .metric {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #2d2d44;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
         }
         
         .metric:last-child {
@@ -87,170 +84,160 @@
         }
         
         .metric-label {
-            color: #888;
-            font-size: 0.9rem;
+            color: #666;
+            font-size: 0.85rem;
         }
         
         .metric-value {
-            font-size: 1.2rem;
-            font-weight: 600;
+            font-size: 0.95rem;
+            font-weight: 500;
         }
         
         .metric-value.good {
-            color: #4ade80;
+            color: #000;
         }
         
         .metric-value.bad {
-            color: #ef4444;
+            color: #999;
         }
         
         .metric-value.warning {
-            color: #fbbf24;
+            color: #666;
         }
         
         .streak {
             display: flex;
-            align-items: center;
+            align-items: baseline;
             gap: 0.5rem;
         }
         
         .streak-count {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #e94560;
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: #000;
         }
         
         .streak-label {
-            color: #888;
-            font-size: 0.85rem;
+            color: #666;
+            font-size: 0.8rem;
         }
         
         .chart-container {
-            background: #1a1a2e;
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid #2d2d44;
-            margin-bottom: 1.5rem;
+            background: #fff;
+            padding: 1.25rem;
+            border: 1px solid #000;
+            margin-bottom: 1px;
         }
         
         .chart-container h3 {
-            color: #e94560;
+            color: #000;
             margin-bottom: 1rem;
-            font-size: 1.1rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.1em;
+            font-weight: 500;
         }
         
         .deadline-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem;
-            background: #0f0f0f;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            border-left: 3px solid #e94560;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
         }
         
         .deadline-item.urgent {
-            border-left-color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
+            border-bottom: 2px solid #000;
         }
         
         .deadline-item.upcoming {
-            border-left-color: #fbbf24;
+            border-bottom: 1px solid #999;
         }
         
         .deadline-item.completed {
-            border-left-color: #4ade80;
-            opacity: 0.6;
+            opacity: 0.4;
         }
         
         .deadline-course {
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-weight: 500;
+            font-size: 0.85rem;
         }
         
         .deadline-name {
-            color: #888;
+            color: #666;
             font-size: 0.8rem;
         }
         
         .deadline-days {
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 500;
         }
         
         .portfolio-value {
-            font-size: 3rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #4ade80, #22c55e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 2.5rem;
+            font-weight: 500;
             text-align: center;
             padding: 1rem 0;
         }
         
         .portfolio-change {
             text-align: center;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
         }
         
         .portfolio-change.up {
-            color: #4ade80;
+            color: #000;
         }
         
         .portfolio-change.down {
-            color: #ef4444;
+            color: #999;
         }
         
         .loading {
             text-align: center;
-            padding: 3rem;
-            color: #888;
+            padding: 2rem;
+            color: #999;
         }
         
         .error {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
+            border: 1px solid #000;
             padding: 1rem;
-            border-radius: 8px;
             text-align: center;
             margin: 1rem 0;
         }
         
         .date-display {
             text-align: center;
-            color: #888;
+            color: #666;
             margin-bottom: 2rem;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
         }
         
         .quick-stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
+            gap: 1px;
             margin-bottom: 2rem;
         }
         
         .quick-stat {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            padding: 1.5rem;
-            border-radius: 12px;
+            background: #fff;
+            padding: 1.25rem;
             text-align: center;
-            border: 1px solid #2d2d44;
+            border: 1px solid #000;
         }
         
         .quick-stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #e94560;
+            font-size: 1.5rem;
+            font-weight: 500;
         }
         
         .quick-stat-label {
-            color: #888;
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
+            color: #666;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         
         @media (max-width: 768px) {
@@ -266,7 +253,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>🦁 THE LEAP</h1>
+        <h1>THE LEAP</h1>
         <p>Life Dashboard - Consistency Regardless of Outcome</p>
     </div>
     
@@ -294,21 +281,21 @@
         
         <div class="grid">
             <div class="card">
-                <h3>📅 Today's Tracking</h3>
+                <h3>Today</h3>
                 <div id="today-tracking">
                     <div class="loading">Loading...</div>
                 </div>
             </div>
             
             <div class="card">
-                <h3>🔥 Streaks</h3>
+                <h3>Streaks</h3>
                 <div id="streaks">
                     <div class="loading">Loading...</div>
                 </div>
             </div>
             
             <div class="card">
-                <h3>💰 Portfolio</h3>
+                <h3>Portfolio</h3>
                 <div id="portfolio">
                     <div class="loading">Loading...</div>
                 </div>
@@ -316,25 +303,25 @@
         </div>
         
         <div class="chart-container">
-            <h3>📈 Portfolio Value (Last 30 Days)</h3>
+            <h3>Portfolio Value (Last 30 Days)</h3>
             <canvas id="portfolio-chart"></canvas>
         </div>
         
         <div class="chart-container">
-            <h3>⏰ Wake-up Times (Last 30 Days)</h3>
+            <h3>Wake-up Times (Last 30 Days)</h3>
             <canvas id="wake-chart"></canvas>
         </div>
         
         <div class="grid">
             <div class="card">
-                <h3>📚 Upcoming Deadlines</h3>
+                <h3>Upcoming Deadlines</h3>
                 <div id="deadlines">
                     <div class="loading">Loading...</div>
                 </div>
             </div>
             
             <div class="card">
-                <h3>💪 Gym Progress</h3>
+                <h3>Gym Progress</h3>
                 <div id="gym-progress">
                     <div class="loading">Loading...</div>
                 </div>
