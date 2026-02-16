@@ -10,7 +10,8 @@ from supabase import create_client
 
 # Supabase config
 SUPABASE_URL = "https://sdgmpjfyzgecfgjpkeua.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZ21wamZ5emdlY2ZnanBrZXVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwODA0MTksImV4cCI6MjA4NjY1NjQxOX0.pWas9s9MDoZtIMki-q6b7v3avKgVsq8B61cx7Cf-ooQ"
+# Using service_role key for write access with RLS enabled
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZ21wamZ5emdlY2ZnanBrZXVhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTA4MDQxOSwiZXhwIjoyMDg2NjU2NDE5fQ.BvkDc7nPpPYjGhMSU-9whQM_wDG8CN3sOMsbLTjazIc"
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 

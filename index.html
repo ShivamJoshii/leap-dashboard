@@ -347,7 +347,7 @@
         const SUPABASE_URL = 'https://sdgmpjfyzgecfgjpkeua.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZ21wamZ5emdlY2ZnanBrZXVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwODA0MTksImV4cCI6MjA4NjY1NjQxOX0.pWas9s9MDoZtIMki-q6b7v3avKgVsq8B61cx7Cf-ooQ';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         // Set current date
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', {
@@ -363,7 +363,7 @@
         async function loadDashboard() {
             try {
                 // Load daily logs
-                const { data: dailyLogs, error: logsError } = await supabase
+                const { data: dailyLogs, error: logsError } = await supabaseClient
                     .from('daily_logs')
                     .select('*')
                     .order('date', { ascending: false })
@@ -372,7 +372,7 @@
                 if (logsError) throw logsError;
                 
                 // Load portfolio snapshots
-                const { data: portfolioData, error: portfolioError } = await supabase
+                const { data: portfolioData, error: portfolioError } = await supabaseClient
                     .from('portfolio_snapshots')
                     .select('*')
                     .order('date', { ascending: false })
@@ -381,14 +381,14 @@
                 if (portfolioError) throw portfolioError;
                 
                 // Load streaks
-                const { data: streaks, error: streaksError } = await supabase
+                const { data: streaks, error: streaksError } = await supabaseClient
                     .from('consistency_streaks')
                     .select('*');
                 
                 if (streaksError) throw streaksError;
                 
                 // Load deadlines
-                const { data: deadlines, error: deadlinesError } = await supabase
+                const { data: deadlines, error: deadlinesError } = await supabaseClient
                     .from('school_deadlines')
                     .select('*')
                     .order('due_date', { ascending: true })
