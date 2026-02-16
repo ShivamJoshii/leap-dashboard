@@ -312,6 +312,11 @@
             <canvas id="wake-chart"></canvas>
         </div>
         
+        <div class="chart-container">
+            <h3>Nutrition (Last 30 Days)</h3>
+            <canvas id="macros-chart"></canvas>
+        </div>
+        
         <div class="grid">
             <div class="card">
                 <h3>Upcoming Deadlines</h3>
@@ -345,7 +350,7 @@
         });
         
         // Initialize charts
-        let portfolioChart, wakeChart;
+        let portfolioChart, wakeChart, macrosChart;
         
         async function loadDashboard() {
             try {
@@ -393,6 +398,7 @@
                 // Render charts
                 renderPortfolioChart(portfolioData);
                 renderWakeChart(dailyLogs);
+                renderMacrosChart(dailyLogs);
                 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
@@ -592,8 +598,8 @@
                     datasets: [{
                         label: 'Portfolio Value (CAD)',
                         data: values,
-                        borderColor: '#4ade80',
-                        backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                        borderColor: '#000',
+                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4
@@ -603,17 +609,17 @@
                     responsive: true,
                     plugins: {
                         legend: {
-                            labels: { color: '#fff' }
+                            labels: { color: '#000' }
                         }
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#888' },
-                            grid: { color: '#2d2d44' }
+                            ticks: { color: '#666' },
+                            grid: { color: '#eee' }
                         },
                         y: {
-                            ticks: { color: '#888' },
-                            grid: { color: '#2d2d44' }
+                            ticks: { color: '#666' },
+                            grid: { color: '#eee' }
                         }
                     }
                 }
@@ -645,10 +651,10 @@
                 data: {
                     labels: dates,
                     datasets: [{
-                        label: 'Wake Time (minutes from midnight)',
+                        label: 'Wake Time',
                         data: wakeMinutes,
-                        borderColor: '#e94560',
-                        backgroundColor: 'rgba(233, 69, 96, 0.1)',
+                        borderColor: '#000',
+                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
                         borderWidth: 2,
                         fill: false,
                         tension: 0.4,
@@ -656,7 +662,7 @@
                     }, {
                         label: 'Target (8 AM)',
                         data: targetLine,
-                        borderColor: '#4ade80',
+                        borderColor: '#999',
                         borderWidth: 2,
                         borderDash: [5, 5],
                         fill: false,
@@ -667,26 +673,102 @@
                     responsive: true,
                     plugins: {
                         legend: {
-                            labels: { color: '#fff' }
+                            labels: { color: '#000' }
                         }
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#888' },
-                            grid: { color: '#2d2d44' }
+                            ticks: { color: '#666' },
+                            grid: { color: '#eee' }
                         },
                         y: {
-                            ticks: { 
-                                color: '#888',
+                            ticks: {
+                                color: '#666',
                                 callback: function(value) {
                                     const hours = Math.floor(value / 60);
                                     const mins = value % 60;
                                     return `${hours}:${mins.toString().padStart(2, '0')}`;
                                 }
                             },
-                            grid: { color: '#2d2d44' },
+                            grid: { color: '#eee' },
                             min: 360,  // 6 AM
                             max: 720   // 12 PM
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderMacrosChart(logs) {
+            const ctx = document.getElementById('macros-chart').getContext('2d');
+
+            if (macrosChart) {
+                macrosChart.destroy();
+            }
+
+            const dates = logs.map(l => new Date(l.date).toLocaleDateString()).reverse();
+            const calories = logs.map(l => l.calories).reverse();
+            const protein = logs.map(l => l.protein).reverse();
+
+            // Target lines
+            const calorieTarget = new Array(dates.length).fill(3000);
+            const proteinTarget = new Array(dates.length).fill(150);
+
+            macrosChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Calories',
+                        data: calories,
+                        backgroundColor: '#000',
+                        borderColor: '#000',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Protein (g)',
+                        data: protein,
+                        backgroundColor: '#666',
+                        borderColor: '#666',
+                        borderWidth: 1,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#000' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#666' },
+                            grid: { color: '#eee' }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            ticks: { color: '#000' },
+                            grid: { color: '#eee' },
+                            title: {
+                                display: true,
+                                text: 'Calories',
+                                color: '#000'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            ticks: { color: '#666' },
+                            grid: { drawOnChartArea: false },
+                            title: {
+                                display: true,
+                                text: 'Protein (g)',
+                                color: '#666'
+                            }
                         }
                     }
                 }
