@@ -75,7 +75,18 @@
             <div class="card"><h3>Upcoming Deadlines</h3><div id="deadlines"><div style="color:#333">Loading...</div></div></div>
             <div class="card"><h3>Workout History</h3><div id="workout-history"><div style="color:#333">Loading...</div></div></div>
         </div>
-        <div class="chart-container"><h3>Workout Frequency (5 Months)</h3><div id="workout-calendar"></div></div>
+        <div class="chart-container">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+                <h3 style="margin-bottom:0">Workout Calendar</h3>
+                <div>
+                    <button onclick="calNav(-1)" style="background:none;border:1px solid #333;color:#fff;padding:0.3rem 0.8rem;cursor:pointer;font-size:0.8rem;margin-right:0.3rem">&larr;</button>
+                    <span id="cal-month-label" style="color:#666;font-size:0.8rem;letter-spacing:1px"></span>
+                    <button onclick="calNav(1)" style="background:none;border:1px solid #333;color:#fff;padding:0.3rem 0.8rem;cursor:pointer;font-size:0.8rem;margin-left:0.3rem">&rarr;</button>
+                </div>
+            </div>
+            <div id="workout-calendar"></div>
+            <div id="cal-day-detail" style="margin-top:1rem;font-size:0.8rem;color:#555"></div>
+        </div>
         <div class="grid">
             <div class="card"><h3>Recent Workouts</h3><div id="recent-workouts"><div style="color:#333">Loading...</div></div></div>
             <div class="card"><h3>Muscle Group Split</h3><canvas id="muscle-chart" style="max-height:250px"></canvas></div>
@@ -191,23 +202,50 @@
             }}});
         }
 
+        let calOffset=0, allWorkouts=[];
+        function calNav(dir){ calOffset+=dir; renderWorkoutCalendar(allWorkouts); }
+
         function renderWorkoutCalendar(workouts) {
-            const c=document.getElementById('workout-calendar'), workoutDates=new Set(workouts.map(w=>w.date)), now=new Date();
-            let html='';
-            for(let i=4;i>=0;i--){
-                const d=new Date(now.getFullYear(),now.getMonth()-i,1), monthName=d.toLocaleString('en',{month:'short',year:'numeric'});
-                const daysInMonth=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(), firstDay=d.getDay();
-                const yearMonth=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                html+=`<div class="month-label">${monthName}</div><div class="workout-calendar">`;
-                ['S','M','T','W','T','F','S'].forEach(day=>{html+=`<div class="cal-day header">${day}</div>`;});
-                for(let e=0;e<firstDay;e++)html+='<div class="cal-day empty"></div>';
-                for(let day=1;day<=daysInMonth;day++){
-                    const dateStr=`${yearMonth}-${String(day).padStart(2,'0')}`, active=workoutDates.has(dateStr)?'active':'';
-                    html+=`<div class="cal-day ${active}">${day}</div>`;
-                }
-                html+='</div>';
+            allWorkouts=workouts;
+            const workoutMap={};
+            workouts.forEach(w=>{ workoutMap[w.date]=w; });
+            const now=new Date();
+            const d=new Date(now.getFullYear(),now.getMonth()+calOffset,1);
+            const monthName=d.toLocaleString('en',{month:'long',year:'numeric'});
+            const daysInMonth=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+            const firstDay=d.getDay();
+            const yearMonth=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            document.getElementById('cal-month-label').textContent=monthName.toUpperCase();
+            const c=document.getElementById('workout-calendar');
+            let html='<div class="workout-calendar">';
+            ['S','M','T','W','T','F','S'].forEach(day=>{html+=`<div class="cal-day header">${day}</div>`;});
+            for(let e=0;e<firstDay;e++)html+='<div class="cal-day empty"></div>';
+            for(let day=1;day<=daysInMonth;day++){
+                const dateStr=`${yearMonth}-${String(day).padStart(2,'0')}`;
+                const w=workoutMap[dateStr];
+                const active=w?'active':'';
+                const today=new Date();
+                const isToday=(dateStr===`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`);
+                const todayStyle=isToday&&!w?'border:1px solid #444;':'';
+                html+=`<div class="cal-day ${active}" style="${todayStyle}cursor:${w?'pointer':'default'}" onclick="showCalDay('${dateStr}')">${day}</div>`;
             }
+            html+='</div>';
             c.innerHTML=html;
+            // Count for this month
+            const count=workouts.filter(w=>w.date.startsWith(yearMonth)).length;
+            document.getElementById('cal-day-detail').innerHTML=`<span style="color:#444">${count} session${count!==1?'s':''} this month</span>`;
+        }
+
+        function showCalDay(dateStr){
+            const w=allWorkouts.find(w=>w.date===dateStr);
+            const detail=document.getElementById('cal-day-detail');
+            if(!w){detail.innerHTML=`<span style="color:#333">No workout on ${dateStr}</span>`;return;}
+            let exercises=[];try{exercises=typeof w.exercises==='string'?JSON.parse(w.exercises):w.exercises;}catch(e){}
+            const d=new Date(dateStr+'T12:00:00');
+            const dateLabel=d.toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric'});
+            detail.innerHTML=`<div style="color:#fff;font-weight:500;margin-bottom:0.5rem">${dateLabel} — ${w.muscle_groups}</div>`+
+                exercises.map(e=>`<div style="color:#666;padding:0.2rem 0">• ${e.name}${e.sets?' — '+
+                    (Array.isArray(e.sets)?e.sets.length+' sets':e.sets):''}</div>`).join('');
         }
 
         function renderMuscleChart(workouts) {
