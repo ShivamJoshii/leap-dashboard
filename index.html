@@ -9,9 +9,12 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace; background: #000; color: #fff; min-height: 100vh; }
-        .header { padding: 2rem; text-align: center; border-bottom: 1px solid #222; }
+        .header { padding: 2rem; text-align: center; border-bottom: 1px solid #222; display: flex; justify-content: center; align-items: center; position: relative; }
         .header h1 { font-size: 2rem; letter-spacing: 4px; font-weight: 300; }
         .header p { color: #666; font-size: 0.85rem; margin-top: 0.5rem; letter-spacing: 2px; }
+        .header-inner { text-align: center; }
+        .logout-btn { position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); background: none; border: 1px solid #333; color: #666; padding: 0.4rem 1rem; cursor: pointer; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; }
+        .logout-btn:hover { color: #fff; border-color: #fff; }
         .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
         .date-display { text-align: center; color: #555; margin-bottom: 2rem; font-size: 0.9rem; letter-spacing: 1px; }
         .quick-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #222; border: 1px solid #222; margin-bottom: 2rem; }
@@ -48,57 +51,334 @@
         .month-label { font-size: 0.7rem; color: #555; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; }
         .streak-count { font-size: 1.5rem; font-weight: 200; }
         .streak-label { color: #555; font-size: 0.7rem; }
-        @media (max-width: 768px) { .quick-stats { grid-template-columns: repeat(2, 1fr); } .grid { grid-template-columns: 1fr; } }
+
+        /* Auth styles */
+        .auth-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; }
+        .auth-box { border: 1px solid #222; padding: 2.5rem; width: 100%; max-width: 360px; }
+        .auth-box h2 { font-size: 1.5rem; font-weight: 300; letter-spacing: 3px; text-align: center; margin-bottom: 2rem; }
+        .auth-box input { width: 100%; padding: 0.75rem; background: #000; border: 1px solid #333; color: #fff; font-size: 0.85rem; margin-bottom: 1rem; outline: none; font-family: inherit; }
+        .auth-box input:focus { border-color: #fff; }
+        .auth-box button { width: 100%; padding: 0.75rem; background: #fff; color: #000; border: none; cursor: pointer; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 500; font-family: inherit; }
+        .auth-box button:hover { background: #ccc; }
+        .auth-toggle { text-align: center; margin-top: 1.5rem; color: #555; font-size: 0.8rem; }
+        .auth-toggle a { color: #fff; cursor: pointer; text-decoration: underline; }
+        .auth-error { color: #999; font-size: 0.75rem; text-align: center; margin-bottom: 1rem; min-height: 1rem; }
+        .auth-skip { text-align: center; margin-top: 1rem; }
+        .auth-skip a { color: #444; cursor: pointer; font-size: 0.75rem; text-decoration: none; }
+        .auth-skip a:hover { color: #666; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 0; margin-bottom: 1rem; border-bottom: 1px solid #222; }
+        .tab { padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #555; cursor: pointer; border-bottom: 1px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
+        .tab.active { color: #fff; border-bottom: 1px solid #fff; }
+
+        /* Todo styles */
+        .todo-input-row { display: flex; gap: 0; margin-bottom: 1rem; }
+        .todo-input-row input { flex: 1; padding: 0.5rem; background: #000; border: 1px solid #222; color: #fff; font-size: 0.8rem; outline: none; font-family: inherit; }
+        .todo-input-row input:focus { border-color: #666; }
+        .todo-input-row button { padding: 0.5rem 1rem; background: #fff; color: #000; border: none; cursor: pointer; font-size: 0.75rem; font-family: inherit; letter-spacing: 1px; }
+        .todo-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid #111; }
+        .todo-item:last-child { border-bottom: none; }
+        .todo-check { width: 14px; height: 14px; border: 1px solid #444; background: none; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .todo-check.done { background: #fff; }
+        .todo-text { font-size: 0.8rem; flex: 1; }
+        .todo-text.done { text-decoration: line-through; color: #444; }
+        .todo-del { background: none; border: none; color: #333; cursor: pointer; font-size: 0.7rem; padding: 0.2rem 0.4rem; }
+        .todo-del:hover { color: #999; }
+
+        /* Expense styles */
+        .expense-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+        .expense-form input, .expense-form select { padding: 0.5rem; background: #000; border: 1px solid #222; color: #fff; font-size: 0.8rem; outline: none; font-family: inherit; }
+        .expense-form input:focus, .expense-form select:focus { border-color: #666; }
+        .expense-form select { appearance: none; -webkit-appearance: none; }
+        .expense-form select option { background: #000; color: #fff; }
+        .expense-form .full-width { grid-column: 1 / -1; }
+        .expense-add-btn { grid-column: 1 / -1; padding: 0.5rem; background: #fff; color: #000; border: none; cursor: pointer; font-size: 0.75rem; font-family: inherit; letter-spacing: 1px; text-transform: uppercase; }
+        .expense-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #111; }
+        .expense-item:last-child { border-bottom: none; }
+        .expense-cat { font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        .expense-desc { font-size: 0.8rem; }
+        .expense-amount { font-size: 0.85rem; font-weight: 500; }
+        .expense-date { font-size: 0.65rem; color: #444; }
+        .expense-total { font-size: 1.5rem; font-weight: 200; text-align: center; padding: 0.5rem 0; margin-bottom: 1rem; border-bottom: 1px solid #222; }
+        .expense-del { background: none; border: none; color: #333; cursor: pointer; font-size: 0.65rem; padding: 0.2rem; margin-left: 0.5rem; }
+        .expense-del:hover { color: #999; }
+
+        .hidden { display: none !important; }
+        @media (max-width: 768px) { .quick-stats { grid-template-columns: repeat(2, 1fr); } .grid { grid-template-columns: 1fr; } .expense-form { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>THE LEAP</h1>
-        <p>Consistency regardless of outcome</p>
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="auth-screen">
+        <div class="auth-box">
+            <h2>THE LEAP</h2>
+            <div id="auth-error" class="auth-error"></div>
+            <div id="login-form">
+                <input type="email" id="auth-email" placeholder="Email" autocomplete="email">
+                <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password">
+                <button onclick="doLogin()">Sign In</button>
+                <div class="auth-toggle">No account? <a onclick="toggleAuth()">Sign Up</a></div>
+            </div>
+            <div id="signup-form" class="hidden">
+                <input type="email" id="signup-email" placeholder="Email" autocomplete="email">
+                <input type="password" id="signup-password" placeholder="Password" autocomplete="new-password">
+                <button onclick="doSignup()">Create Account</button>
+                <div class="auth-toggle">Have an account? <a onclick="toggleAuth()">Sign In</a></div>
+            </div>
+            <div class="auth-skip"><a onclick="skipAuth()">Continue without account</a></div>
+        </div>
     </div>
-    <div class="container">
-        <div class="date-display" id="current-date"></div>
-        <div class="quick-stats">
-            <div class="quick-stat"><div class="quick-stat-value" id="wake-streak">-</div><div class="quick-stat-label">Wake Streak</div></div>
-            <div class="quick-stat"><div class="quick-stat-value" id="gym-count">-</div><div class="quick-stat-label">Gym This Month</div></div>
-            <div class="quick-stat"><div class="quick-stat-value" id="portfolio-value">-</div><div class="quick-stat-label">Portfolio</div></div>
-            <div class="quick-stat"><div class="quick-stat-value" id="days-to-exam">-</div><div class="quick-stat-label">Days to Exam</div></div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden">
+        <div class="header">
+            <div class="header-inner">
+                <h1>THE LEAP</h1>
+                <p>Consistency regardless of outcome</p>
+            </div>
+            <button class="logout-btn" id="logout-btn" onclick="doLogout()">Logout</button>
         </div>
-        <div class="grid">
-            <div class="card"><h3>Today</h3><div id="today-tracking"><div style="color:#333">Loading...</div></div></div>
-            <div class="card"><h3>Streaks</h3><div id="streaks"><div style="color:#333">Loading...</div></div></div>
-            <div class="card"><h3>Portfolio</h3><div id="portfolio"><div style="color:#333">Loading...</div></div></div>
-        </div>
-        <div class="chart-container"><h3>Nutrition (Last 14 Days)</h3><canvas id="nutrition-chart"></canvas></div>
-        <div class="chart-container"><h3>Wake-up Times</h3><canvas id="wake-chart"></canvas></div>
-        <div class="grid">
-            <div class="card"><h3>Upcoming Deadlines</h3><div id="deadlines"><div style="color:#333">Loading...</div></div></div>
-            <div class="card"><h3>Workout History</h3><div id="workout-history"><div style="color:#333">Loading...</div></div></div>
-        </div>
-        <div class="chart-container">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-                <h3 style="margin-bottom:0">Workout Calendar</h3>
-                <div>
-                    <button onclick="calNav(-1)" style="background:none;border:1px solid #333;color:#fff;padding:0.3rem 0.8rem;cursor:pointer;font-size:0.8rem;margin-right:0.3rem">&larr;</button>
-                    <span id="cal-month-label" style="color:#666;font-size:0.8rem;letter-spacing:1px"></span>
-                    <button onclick="calNav(1)" style="background:none;border:1px solid #333;color:#fff;padding:0.3rem 0.8rem;cursor:pointer;font-size:0.8rem;margin-left:0.3rem">&rarr;</button>
+        <div class="container">
+            <div class="date-display" id="current-date"></div>
+            <div class="quick-stats">
+                <div class="quick-stat"><div class="quick-stat-value" id="wake-streak">-</div><div class="quick-stat-label">Wake Streak</div></div>
+                <div class="quick-stat"><div class="quick-stat-value" id="gym-count">-</div><div class="quick-stat-label">Gym This Month</div></div>
+                <div class="quick-stat"><div class="quick-stat-value" id="portfolio-value">-</div><div class="quick-stat-label">Portfolio</div></div>
+                <div class="quick-stat"><div class="quick-stat-value" id="days-to-exam">-</div><div class="quick-stat-label">Days to Exam</div></div>
+            </div>
+
+            <!-- Agenda + Expenses row -->
+            <div class="grid">
+                <div class="card">
+                    <h3>Agenda</h3>
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTodoTab('day',this)">Day</button>
+                        <button class="tab" onclick="switchTodoTab('week',this)">Week</button>
+                        <button class="tab" onclick="switchTodoTab('month',this)">Month</button>
+                    </div>
+                    <div class="todo-input-row">
+                        <input type="text" id="todo-input" placeholder="Add task..." onkeydown="if(event.key==='Enter')addTodo()">
+                        <button onclick="addTodo()">Add</button>
+                    </div>
+                    <div id="todo-list"></div>
+                </div>
+                <div class="card">
+                    <h3>Expenses</h3>
+                    <div class="expense-total" id="expense-total">$0</div>
+                    <div class="expense-form">
+                        <input type="number" id="exp-amount" placeholder="Amount" step="0.01">
+                        <select id="exp-category">
+                            <option value="food">Food</option>
+                            <option value="transport">Transport</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="bills">Bills</option>
+                            <option value="health">Health</option>
+                            <option value="education">Education</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <input type="text" id="exp-desc" placeholder="Description" class="full-width">
+                        <button class="expense-add-btn" onclick="addExpense()">Add Expense</button>
+                    </div>
+                    <div id="expense-list"></div>
                 </div>
             </div>
-            <div id="workout-calendar"></div>
-            <div id="cal-day-detail" style="margin-top:1rem;font-size:0.8rem;color:#555"></div>
-        </div>
-        <div class="grid">
-            <div class="card"><h3>Recent Workouts</h3><div id="recent-workouts"><div style="color:#333">Loading...</div></div></div>
-            <div class="card"><h3>Muscle Group Split</h3><canvas id="muscle-chart" style="max-height:250px"></canvas></div>
+
+            <div class="grid">
+                <div class="card"><h3>Today</h3><div id="today-tracking"><div style="color:#333">Loading...</div></div></div>
+                <div class="card"><h3>Streaks</h3><div id="streaks"><div style="color:#333">Loading...</div></div></div>
+                <div class="card"><h3>Portfolio</h3><div id="portfolio"><div style="color:#333">Loading...</div></div></div>
+            </div>
+            <div class="chart-container"><h3>Nutrition (Last 14 Days)</h3><canvas id="nutrition-chart"></canvas></div>
+            <div class="chart-container"><h3>Wake-up Times</h3><canvas id="wake-chart"></canvas></div>
+            <div class="grid">
+                <div class="card"><h3>Upcoming Deadlines</h3><div id="deadlines"><div style="color:#333">Loading...</div></div></div>
+                <div class="card"><h3>Workout History</h3><div id="workout-history"><div style="color:#333">Loading...</div></div></div>
+            </div>
+            <div class="chart-container">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+                    <h3 style="margin-bottom:0">Workout Calendar</h3>
+                    <div>
+                        <button onclick="calNav(-1)" style="background:none;border:1px solid #333;color:#fff;padding:0.3rem 0.8rem;cursor:pointer;font-size:0.8rem;margin-right:0.3rem">&larr;</button>
+                        <span id="cal-month-label" style="color:#666;font-size:0.8rem;letter-spacing:1px"></span>
+                        <button onclick="calNav(1)" style="background:none;border:1px solid #333;color:#fff;padding:0.3rem 0.8rem;cursor:pointer;font-size:0.8rem;margin-left:0.3rem">&rarr;</button>
+                    </div>
+                </div>
+                <div id="workout-calendar"></div>
+                <div id="cal-day-detail" style="margin-top:1rem;font-size:0.8rem;color:#555"></div>
+            </div>
+            <div class="grid">
+                <div class="card"><h3>Recent Workouts</h3><div id="recent-workouts"><div style="color:#333">Loading...</div></div></div>
+                <div class="card"><h3>Muscle Group Split</h3><canvas id="muscle-chart" style="max-height:250px"></canvas></div>
+            </div>
         </div>
     </div>
+
     <script>
         const SUPABASE_URL = 'https://sdgmpjfyzgecfgjpkeua.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZ21wamZ5emdlY2ZnanBrZXVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwODA0MTksImV4cCI6MjA4NjY1NjQxOX0.pWas9s9MDoZtIMki-q6b7v3avKgVsq8B61cx7Cf-ooQ';
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        let currentUser = null;
+        let currentTodoTab = 'day';
         let nutritionChart, wakeChart, muscleChart;
 
+        // ========== AUTH ==========
+        async function checkAuth() {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                showDashboard();
+            }
+        }
+
+        async function doLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            document.getElementById('auth-error').textContent = '';
+            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+            if (error) { document.getElementById('auth-error').textContent = error.message; return; }
+            currentUser = data.user;
+            showDashboard();
+        }
+
+        async function doSignup() {
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            document.getElementById('auth-error').textContent = '';
+            const { data, error } = await sb.auth.signUp({ email, password });
+            if (error) { document.getElementById('auth-error').textContent = error.message; return; }
+            if (data.user) {
+                currentUser = data.user;
+                document.getElementById('auth-error').textContent = 'Check your email to confirm, then sign in.';
+            }
+        }
+
+        async function doLogout() {
+            await sb.auth.signOut();
+            currentUser = null;
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+
+        function skipAuth() {
+            currentUser = null;
+            showDashboard();
+        }
+
+        function toggleAuth() {
+            document.getElementById('login-form').classList.toggle('hidden');
+            document.getElementById('signup-form').classList.toggle('hidden');
+            document.getElementById('auth-error').textContent = '';
+        }
+
+        function showDashboard() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('logout-btn').style.display = currentUser ? 'block' : 'none';
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            loadDashboard();
+            loadTodos();
+            loadExpenses();
+        }
+
+        // ========== TODOS ==========
+        function switchTodoTab(tab, el) {
+            currentTodoTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            loadTodos();
+        }
+
+        async function loadTodos() {
+            const container = document.getElementById('todo-list');
+            let query = sb.from('todos').select('*').eq('list_type', currentTodoTab).order('created_at', { ascending: true });
+            if (currentUser) query = query.eq('user_id', currentUser.id);
+            const { data, error } = await query;
+            if (error) { container.innerHTML = `<div style="color:#333">${error.message}</div>`; return; }
+            if (!data || !data.length) { container.innerHTML = '<div style="color:#333;font-size:0.8rem">No tasks</div>'; return; }
+            container.innerHTML = data.map(t => `
+                <div class="todo-item">
+                    <div class="todo-check ${t.completed ? 'done' : ''}" onclick="toggleTodo('${t.id}', ${!t.completed})">${t.completed ? 'x' : ''}</div>
+                    <span class="todo-text ${t.completed ? 'done' : ''}">${esc(t.text)}</span>
+                    <button class="todo-del" onclick="deleteTodo('${t.id}')">x</button>
+                </div>
+            `).join('');
+        }
+
+        async function addTodo() {
+            const input = document.getElementById('todo-input');
+            const text = input.value.trim();
+            if (!text) return;
+            const row = { text, list_type: currentTodoTab, completed: false };
+            if (currentUser) row.user_id = currentUser.id;
+            const { error } = await sb.from('todos').insert(row);
+            if (error) { console.error(error); return; }
+            input.value = '';
+            loadTodos();
+        }
+
+        async function toggleTodo(id, completed) {
+            await sb.from('todos').update({ completed }).eq('id', id);
+            loadTodos();
+        }
+
+        async function deleteTodo(id) {
+            await sb.from('todos').delete().eq('id', id);
+            loadTodos();
+        }
+
+        // ========== EXPENSES ==========
+        async function loadExpenses() {
+            const container = document.getElementById('expense-list');
+            const now = new Date();
+            const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+            let query = sb.from('expenses').select('*').gte('date', monthStart).order('date', { ascending: false });
+            if (currentUser) query = query.eq('user_id', currentUser.id);
+            const { data, error } = await query;
+            if (error) { container.innerHTML = `<div style="color:#333">${error.message}</div>`; return; }
+            const total = (data || []).reduce((sum, e) => sum + parseFloat(e.amount), 0);
+            document.getElementById('expense-total').textContent = '$' + total.toFixed(2);
+            if (!data || !data.length) { container.innerHTML = '<div style="color:#333;font-size:0.8rem">No expenses this month</div>'; return; }
+            container.innerHTML = data.slice(0, 15).map(e => {
+                const d = new Date(e.date + 'T12:00:00');
+                const dateStr = d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+                return `
+                    <div class="expense-item">
+                        <div>
+                            <div class="expense-desc">${esc(e.description || e.category)}</div>
+                            <div class="expense-cat">${e.category} &middot; ${dateStr}</div>
+                        </div>
+                        <div style="display:flex;align-items:center">
+                            <span class="expense-amount">$${parseFloat(e.amount).toFixed(2)}</span>
+                            <button class="expense-del" onclick="deleteExpense('${e.id}')">x</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function addExpense() {
+            const amount = document.getElementById('exp-amount').value;
+            const category = document.getElementById('exp-category').value;
+            const description = document.getElementById('exp-desc').value.trim();
+            if (!amount || parseFloat(amount) <= 0) return;
+            const row = { amount: parseFloat(amount), category, description: description || null, date: new Date().toISOString().split('T')[0] };
+            if (currentUser) row.user_id = currentUser.id;
+            const { error } = await sb.from('expenses').insert(row);
+            if (error) { console.error(error); return; }
+            document.getElementById('exp-amount').value = '';
+            document.getElementById('exp-desc').value = '';
+            loadExpenses();
+        }
+
+        async function deleteExpense(id) {
+            await sb.from('expenses').delete().eq('id', id);
+            loadExpenses();
+        }
+
+        // ========== DASHBOARD ==========
         async function loadDashboard() {
             try {
                 const [logsRes, portfolioRes, streaksRes, deadlinesRes, workoutsRes] = await Promise.all([
@@ -116,6 +396,8 @@
                 document.getElementById('gym-count').textContent = workouts.filter(w => w.date.startsWith(thisMonth)).length;
             } catch (e) { console.error('Dashboard error:', e); }
         }
+
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
         function updateToday(today) {
             const c = document.getElementById('today-tracking');
@@ -231,7 +513,6 @@
             }
             html+='</div>';
             c.innerHTML=html;
-            // Count for this month
             const count=workouts.filter(w=>w.date.startsWith(yearMonth)).length;
             document.getElementById('cal-day-detail').innerHTML=`<span style="color:#444">${count} session${count!==1?'s':''} this month</span>`;
         }
@@ -271,8 +552,8 @@
             }}});
         }
 
-        loadDashboard();
-        setInterval(loadDashboard, 5*60*1000);
+        // Init
+        checkAuth();
     </script>
 </body>
 </html>
