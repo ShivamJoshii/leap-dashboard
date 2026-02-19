@@ -126,7 +126,6 @@
                 <button onclick="doSignup()">Create Account</button>
                 <div class="auth-toggle">Have an account? <a onclick="toggleAuth()">Sign In</a></div>
             </div>
-            <div class="auth-skip"><a onclick="skipAuth()">Continue without account</a></div>
         </div>
     </div>
 
@@ -260,11 +259,6 @@
             currentUser = null;
             document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
-        }
-
-        function skipAuth() {
-            currentUser = null;
-            showDashboard();
         }
 
         function toggleAuth() {
