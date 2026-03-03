@@ -41,12 +41,13 @@ upsert("daily_logs", {
     "notes": "Woke up late. Focused on trading education. CMPUT 379 midterm prep starts today."
 })
 
-# Seed daily_logs for previous days (from memory)
+# Seed daily_logs for previous days (from memory) - with actual nutrition data
 previous_days = [
-    {"date": "2026-02-15", "wake_time": "09:58", "wake_on_time": False, "gym_done": True, "gym_workout": "Legs", "calories": None, "protein": None},
+    {"date": "2026-02-15", "wake_time": "09:58", "wake_on_time": False, "gym_done": True, "gym_workout": "Legs", "calories": None, "protein": None, "trading_pnl": 102, "trading_notes": "First paper trade - rode momentum, BTC weakness"},
     {"date": "2026-02-14", "wake_time": "09:58", "wake_on_time": False, "gym_done": True, "gym_workout": "Back & Bi", "calories": None, "protein": None},
-    {"date": "2026-02-13", "wake_time": "09:17", "wake_on_time": False, "gym_done": True, "gym_workout": "Shoulders", "calories": None, "protein": None},
-    {"date": "2026-02-12", "wake_time": "11:07", "wake_on_time": False, "gym_done": False, "gym_workout": None, "calories": None, "protein": None},
+    {"date": "2026-02-13", "wake_time": "09:17", "wake_on_time": False, "gym_done": True, "gym_workout": "Shoulders", "calories": 3414, "protein": 128, "notes": "Short on protein - ran out of protein powder"},
+    {"date": "2026-02-12", "wake_time": "11:07", "wake_on_time": False, "gym_done": False, "gym_workout": None, "calories": 3000, "protein": 138, "notes": "Hit cal target, 12g short on protein"},
+    {"date": "2026-02-11", "wake_time": None, "wake_on_time": False, "gym_done": None, "gym_workout": None, "calories": 2520, "protein": 139},
 ]
 
 for day in previous_days:
